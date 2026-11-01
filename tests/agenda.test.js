@@ -77,3 +77,25 @@ test("domingo não tem como oferecer horários livres", function () {
   const livres = gerarHorariosLivres("2026-11-01", 30, []);
   assert.deepEqual(livres, []);
 });
+
+test("não oferece horários durante o almoço", function () {
+  const livres = gerarHorariosLivres("2026-10-30", 30, []);
+
+  assert.equal(livres.includes("12:00"), false);
+  assert.equal(livres.includes("12:30"), false);
+  assert.equal(livres.includes("13:00"), true);
+});
+
+test("não oferece início às 18:00 nem horários que terminem depois do fechamento", function () {
+  const livres = gerarHorariosLivres("2026-10-30", 30, []);
+
+  assert.equal(livres.includes("17:30"), true); // termina exatamente às 18:00, não deixa passar disso
+  assert.equal(livres.includes("18:00"), false);
+});
+
+test("serviço de 90 minutos não pode começar às 17:00", function () {
+  const livres = gerarHorariosLivres("2026-10-30", 90, []);
+
+  assert.equal(livres.includes("16:30"), true); // termina exatamente às 18:00, sem passar tambem
+  assert.equal(livres.includes("17:00"), false); // terminaria às 18:30, inválido não pode marcar
+});
