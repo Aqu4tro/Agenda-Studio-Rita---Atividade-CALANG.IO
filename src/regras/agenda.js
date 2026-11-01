@@ -97,3 +97,10 @@ export function gerarHorariosLivres(data, duracao, agendamentos) {
 
   return livres;
 }
+
+// Cancela o atendimento da "data" que começa em "inicio" e devolve a nova lista.
+// filter cria uma lista nova só com os itens que passam na condição;
+// aqui, todos menos o cancelado. A lista original não é alterada.
+export function cancelarAgendamento(agendamentos, data, inicio) {
+    return agendamentos.filter(a => !(a.data === data && a.inicio === inicio));
+}

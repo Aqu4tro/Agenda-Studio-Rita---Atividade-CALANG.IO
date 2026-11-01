@@ -4,6 +4,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { horaParaMinutos, haConflito, gerarHorariosLivres, } from "../src/regras/agenda.js";
+import { cancelarAgendamento, gerarHorariosLivres } from "../src/regras/agenda.js";
 
 // Um corte marcado às 10:00 (ocupa de 10:00 até 11:00).
 const corteAs10 = [{ inicio: "10:00", duracao: 60 }];
@@ -76,4 +77,27 @@ test("escova não oferece horáris sobrepostos a um corte às 10:00", function (
 test("domingo não tem como oferecer horários livres", function () {
   const livres = gerarHorariosLivres("2026-11-01", 30, []);
   assert.deepEqual(livres, []);
+});
+
+test("depois de cancelar, o horário volta a aparecer como livre", () => {
+    const data = "2026-11-02"; // segunda-feira
+    const marcados = [{ data, inicio: "10:00", duracao: 60 }];
+
+    assert.ok(!gerarHorariosLivres(data, 60, marcados).includes("10:00"));
+
+    const depois = cancelarAgendamento(marcados, data, "10:00");
+
+    assert.ok(gerarHorariosLivres(data, 60, depois).includes("10:00"));
+});
+
+test("cancelar não apaga o mesmo horário de outro dia", () => {
+    const marcados = [
+        { data: "2026-11-02", inicio: "10:00" },
+        { data: "2026-11-03", inicio: "10:00" },
+    ];
+
+    const depois = cancelarAgendamento(marcados, "2026-11-02", "10:00");
+
+    assert.equal(depois.length, 1);
+    assert.equal(depois[0].data, "2026-11-03");
 });

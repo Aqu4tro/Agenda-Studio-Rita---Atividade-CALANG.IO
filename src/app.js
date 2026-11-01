@@ -1,5 +1,6 @@
 import { SERVICOS } from "./servicos.js";
 import { carregarAgendamentos, salvarAgendamentos } from "./persistencia.js";
+import { cancelarAgendamento } from "./regras/agenda.js";
 
 const listaServicos = document.getElementById("lista-servicos");
 const form = document.getElementById("form-agendamento");
@@ -44,6 +45,9 @@ function atualizarPainel() {
       <li>
         ${agendamento.inicio} — ${agendamento.nome} —
         ${agendamento.telefone} — ${agendamento.servico}
+        <button type="button" class="cancelar"
+          data-data="${agendamento.data}"
+          data-inicio="${agendamento.inicio}">Cancelar</button>
       </li>
     `;
   }).join("");
@@ -81,6 +85,26 @@ form.addEventListener("submit", function (event) {
 
   mensagemAgendamento.textContent = "Agendamento salvo.";
   form.reset();
+  atualizarPainel();
+});
+
+// Um único "ouvinte" na lista inteira descobre qual botão foi clicado.
+// Isso funciona mesmo com botões criados depois pelo innerHTML.
+// dataset lê os atributos data-data e data-inicio que o botão carrega.
+listaAgendamentos.addEventListener("click", function (event) {
+  const botao = event.target.closest("button.cancelar");
+  if (!botao) {
+    return;
+  }
+
+  const restantes = cancelarAgendamento(
+    carregarAgendamentos(),
+    botao.dataset.data,
+    botao.dataset.inicio
+  );
+  salvarAgendamentos(restantes);
+
+  mensagemPainel.textContent = "Agendamento cancelado.";
   atualizarPainel();
 });
 
