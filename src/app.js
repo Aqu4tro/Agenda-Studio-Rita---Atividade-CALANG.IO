@@ -1,4 +1,5 @@
 import { SERVICOS } from "./servicos.js";
+import { carregarAgendamentos, salvarAgendamentos } from "./persistencia.js"; // NOVO
 
 const listaElementos = document.getElementById("lista-servicos");
 
@@ -17,6 +18,8 @@ const campoNome = document.getElementById("nome");
 const campoTelefone = document.getElementById("telefone");
 const mensagem = document.getElementById("mensagem-agendamento");
 
+const agendamentos = carregarAgendamentos(); // NOVO: lê o que já estava salvo
+
 form.addEventListener("submit", function (event) {
   event.preventDefault();
 
@@ -27,6 +30,9 @@ form.addEventListener("submit", function (event) {
     mensagem.textContent = "Preencha o nome e o telefone para agendar.";
     return;
   }
+
+  agendamentos.push({ nome, telefone }); // NOVO: adiciona na lista (push = incluir no final)
+  salvarAgendamentos(agendamentos);      // NOVO: grava no localStorage
 
   mensagem.textContent = "Nome e telefone preenchidos.";
 });
