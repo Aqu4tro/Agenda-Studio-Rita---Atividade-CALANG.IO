@@ -1,26 +1,59 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Studio Rita</title>
-
-    <link rel="stylesheet" href="css/style.css">
-
-<script type="module" src="src/app.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agenda Studio Rita</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="src/app.js"></script>
 </head>
-
 <body>
-    <h1>Agenda Studio Rita</h1>
-    <main>
-        <section id="agendar">
-            <h2 id = "servicos-disponiveis">Serviços Disponíveis</h2>
-        
-            <div id="lista-servicos"></div>
-            <!-- Os serviços são inseridos pelo javascript -->
-        </section>
-    </main>
+  <h1>Agenda Studio Rita</h1>
+
+  <main>
+    <section id="agendar">
+      <h2>Serviços disponíveis</h2>
+      <div id="lista-servicos"></div>
+    </section>
+
+    <form id="form-agendamento">
+      <h2>Agendar</h2>
+
+      <label for="nome">Nome</label>
+      <input id="nome" name="nome" type="text" required>
+
+      <label for="telefone">Telefone</label>
+      <input id="telefone" name="telefone" type="tel" required>
+
+      <label for="servico">Serviço</label>
+      <select id="servico" name="servico" required>
+        <option value="">Selecione um serviço</option>
+      </select>
+
+      <label for="data">Data</label>
+      <input id="data" name="data" type="date" required>
+
+      <label for="inicio">Horário</label>
+      <input id="inicio" name="inicio" type="time" required>
+
+      <button type="submit">Agendar</button>
+      <p id="mensagem-agendamento" role="status"></p>
+    </form>
+
+    <section id="painel-rita">
+      <h2>Painel da Rita</h2>
+
+      <label for="data-painel">Escolha o dia</label>
+      <input id="data-painel" type="date">
+
+      <p id="mensagem-painel" role="status"></p>
+
+      <h3>Pendentes</h3>
+      <ul id="lista-pendentes"></ul>
+
+      <h3>Concluídos</h3>
+      <ul id="lista-concluidos"></ul>
+    </section>
+  </main>
 </body>
 </html>
