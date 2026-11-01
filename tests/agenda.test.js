@@ -3,7 +3,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { horaParaMinutos, haConflito } from "../src/regras/agenda.js";
+import { horaParaMinutos, haConflito, gerarHorariosLivres, } from "../src/regras/agenda.js";
 
 // Um corte marcado às 10:00 (ocupa de 10:00 até 11:00).
 const corteAs10 = [{ inicio: "10:00", duracao: 60 }];
@@ -63,4 +63,17 @@ test("com vários agendamentos, detecta conflito com o segundo", function () {
     { inicio: "11:00", duracao: 60 },
   ];
   assert.equal(haConflito("11:30", 30, agenda), true);
+});
+test("escova não oferece horáris sobrepostos a um corte às 10:00", function () {
+  const marcados = [{ inicio: "10:00", duracao: 60 }];
+  const livres = gerarHorariosLivres("2026-10-30", 30, marcados);
+
+  assert.equal(livres.includes("10:00"), false);
+  
+  assert.equal(livres.includes("10:30"), false);
+})
+
+test("domingo não tem como oferecer horários livres", function () {
+  const livres = gerarHorariosLivres("2026-11-01", 30, []);
+  assert.deepEqual(livres, []);
 });
