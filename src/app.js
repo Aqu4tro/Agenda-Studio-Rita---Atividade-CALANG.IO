@@ -12,8 +12,10 @@ const campoInicio = document.getElementById("inicio");
 const mensagemAgendamento = document.getElementById("mensagem-agendamento");
 
 const campoDataPainel = document.getElementById("data-painel");
-const listaAgendamentos = document.getElementById("lista-agendamentos");
+const listaPendentes = document.getElementById("lista-pendentes");
+const listaConcluidos = document.getElementById("lista-concluidos");
 const mensagemPainel = document.getElementById("mensagem-painel");
+const CHAVE_DATA_PAINEL = "dataPainel";
 
 listaServicos.innerHTML = SERVICOS.map(function (servico) {
   return `
@@ -29,6 +31,33 @@ campoServico.innerHTML += SERVICOS.map(function (servico) {
   return `<option value="${servico.nome}">${servico.nome}</option>`;
 }).join("");
 
+function montarItemPainel(agendamento, concluido) {
+  const botoes = concluido
+    ? ""
+    : `
+      <button
+        type="button"
+        class="concluir"
+        data-data="${agendamento.data}"
+        data-inicio="${agendamento.inicio}"
+      >Concluir</button>
+      <button
+        type="button"
+        class="cancelar"
+        data-data="${agendamento.data}"
+        data-inicio="${agendamento.inicio}"
+      >Cancelar</button>
+    `;
+
+  return `
+    <li>
+      ${agendamento.inicio} — ${agendamento.nome} —
+      ${agendamento.telefone} — ${agendamento.servico}
+      ${botoes}
+    </li>
+  `;
+}
+
 function atualizarPainel() {
   const dataEscolhida = campoDataPainel.value;
 
@@ -40,17 +69,24 @@ function atualizarPainel() {
       return (a.inicio || "").localeCompare(b.inicio || "");
     });
 
-  listaAgendamentos.innerHTML = doDia.map(function (agendamento) {
-    return `
-      <li>
-        ${agendamento.inicio} — ${agendamento.nome} —
-        ${agendamento.telefone} — ${agendamento.servico}
-        <button type="button" class="cancelar"
-          data-data="${agendamento.data}"
-          data-inicio="${agendamento.inicio}">Cancelar</button>
-      </li>
-    `;
-  }).join("");
+  const pendentes = doDia.filter(function (agendamento) {
+    return !agendamento.concluido;
+  });
+  const concluidos = doDia.filter(function (agendamento) {
+    return agendamento.concluido;
+  });
+
+  listaPendentes.innerHTML = pendentes
+    .map(function (agendamento) {
+      return montarItemPainel(agendamento, false);
+    })
+    .join("");
+
+  listaConcluidos.innerHTML = concluidos
+    .map(function (agendamento) {
+      return montarItemPainel(agendamento, true);
+    })
+    .join("");
 
   mensagemPainel.textContent = doDia.length
     ? ""
@@ -83,29 +119,61 @@ form.addEventListener("submit", function (event) {
   agendamentos.push(agendamento);
   salvarAgendamentos(agendamentos);
 
+  campoDataPainel.value = agendamento.data;
+  localStorage.setItem(CHAVE_DATA_PAINEL, agendamento.data);
   mensagemAgendamento.textContent = "Agendamento salvo.";
   form.reset();
   atualizarPainel();
 });
 
-// Um único "ouvinte" na lista inteira descobre qual botão foi clicado.
-// Isso funciona mesmo com botões criados depois pelo innerHTML.
-// dataset lê os atributos data-data e data-inicio que o botão carrega.
-listaAgendamentos.addEventListener("click", function (event) {
-  const botao = event.target.closest("button.cancelar");
-  if (!botao) {
+listaPendentes.addEventListener("click", function (event) {
+  const botaoConcluir = event.target.closest("button.concluir");
+  const botaoCancelar = event.target.closest("button.cancelar");
+
+  if (botaoConcluir) {
+    const atualizados = carregarAgendamentos().map(function (agendamento) {
+      if (
+        agendamento.data === botaoConcluir.dataset.data &&
+        agendamento.inicio === botaoConcluir.dataset.inicio
+      ) {
+        return { ...agendamento, concluido: true };
+      }
+
+      return agendamento;
+    });
+
+    salvarAgendamentos(atualizados);
+    mensagemPainel.textContent = "Atendimento marcado como concluído.";
+    atualizarPainel();
     return;
   }
 
-  const restantes = cancelarAgendamento(
-    carregarAgendamentos(),
-    botao.dataset.data,
-    botao.dataset.inicio
-  );
-  salvarAgendamentos(restantes);
+  if (botaoCancelar) {
+    const restantes = cancelarAgendamento(
+      carregarAgendamentos(),
+      botaoCancelar.dataset.data,
+      botaoCancelar.dataset.inicio
+    );
 
-  mensagemPainel.textContent = "Agendamento cancelado.";
+    salvarAgendamentos(restantes);
+    mensagemPainel.textContent = "Agendamento cancelado.";
+    atualizarPainel();
+  }
+});
+
+campoDataPainel.addEventListener("change", function () {
+  localStorage.setItem(CHAVE_DATA_PAINEL, campoDataPainel.value);
   atualizarPainel();
 });
 
-campoDataPainel.addEventListener("change", atualizarPainel);
+function dataLocalHoje() {
+  const hoje = new Date();
+  const ano = hoje.getFullYear();
+  const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+  const dia = String(hoje.getDate()).padStart(2, "0");
+  return `${ano}-${mes}-${dia}`;
+}
+
+campoDataPainel.value =
+  localStorage.getItem(CHAVE_DATA_PAINEL) || dataLocalHoje();
+atualizarPainel();
