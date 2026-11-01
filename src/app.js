@@ -1,38 +1,87 @@
 import { SERVICOS } from "./servicos.js";
-import { carregarAgendamentos, salvarAgendamentos } from "./persistencia.js"; // NOVO
+import { carregarAgendamentos, salvarAgendamentos } from "./persistencia.js";
 
-const listaElementos = document.getElementById("lista-servicos");
-
-listaElementos.innerHTML = SERVICOS.map(servico => `
-    <div class="servico">
-        <h3>${servico.nome}</h3>
-
-        <p>Duração: ${servico.duracao} minutos</p>
-
-        <p>Preço: R$ ${servico.preco}</p>
-    </div>
-`).join("");
-
+const listaServicos = document.getElementById("lista-servicos");
 const form = document.getElementById("form-agendamento");
 const campoNome = document.getElementById("nome");
 const campoTelefone = document.getElementById("telefone");
-const mensagem = document.getElementById("mensagem-agendamento");
+const campoServico = document.getElementById("servico");
+const campoData = document.getElementById("data");
+const campoInicio = document.getElementById("inicio");
+const mensagemAgendamento = document.getElementById("mensagem-agendamento");
 
-const agendamentos = carregarAgendamentos(); // NOVO: lê o que já estava salvo
+const campoDataPainel = document.getElementById("data-painel");
+const listaAgendamentos = document.getElementById("lista-agendamentos");
+const mensagemPainel = document.getElementById("mensagem-painel");
+
+listaServicos.innerHTML = SERVICOS.map(function (servico) {
+  return `
+    <div class="servico">
+      <h3>${servico.nome}</h3>
+      <p>Duração: ${servico.duracao} minutos</p>
+      <p>Preço: R$ ${servico.preco}</p>
+    </div>
+  `;
+}).join("");
+
+campoServico.innerHTML += SERVICOS.map(function (servico) {
+  return `<option value="${servico.nome}">${servico.nome}</option>`;
+}).join("");
+
+function atualizarPainel() {
+  const dataEscolhida = campoDataPainel.value;
+
+  const doDia = carregarAgendamentos()
+    .filter(function (agendamento) {
+      return agendamento.data === dataEscolhida;
+    })
+    .sort(function (a, b) {
+      return (a.inicio || "").localeCompare(b.inicio || "");
+    });
+
+  listaAgendamentos.innerHTML = doDia.map(function (agendamento) {
+    return `
+      <li>
+        ${agendamento.inicio} — ${agendamento.nome} —
+        ${agendamento.telefone} — ${agendamento.servico}
+      </li>
+    `;
+  }).join("");
+
+  mensagemPainel.textContent = doDia.length
+    ? ""
+    : "Nenhum agendamento para este dia.";
+}
 
 form.addEventListener("submit", function (event) {
   event.preventDefault();
 
-  const nome = campoNome.value.trim();
-  const telefone = campoTelefone.value.trim();
+  const agendamento = {
+    nome: campoNome.value.trim(),
+    telefone: campoTelefone.value.trim(),
+    servico: campoServico.value,
+    data: campoData.value,
+    inicio: campoInicio.value,
+  };
 
-  if (!nome || !telefone) {
-    mensagem.textContent = "Preencha o nome e o telefone para agendar.";
+  if (
+    !agendamento.nome ||
+    !agendamento.telefone ||
+    !agendamento.servico ||
+    !agendamento.data ||
+    !agendamento.inicio
+  ) {
+    mensagemAgendamento.textContent = "Preencha todos os campos.";
     return;
   }
 
-  agendamentos.push({ nome, telefone }); // NOVO: adiciona na lista (push = incluir no final)
-  salvarAgendamentos(agendamentos);      // NOVO: grava no localStorage
+  const agendamentos = carregarAgendamentos();
+  agendamentos.push(agendamento);
+  salvarAgendamentos(agendamentos);
 
-  mensagem.textContent = "Nome e telefone preenchidos.";
+  mensagemAgendamento.textContent = "Agendamento salvo.";
+  form.reset();
+  atualizarPainel();
 });
+
+campoDataPainel.addEventListener("change", atualizarPainel);
