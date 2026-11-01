@@ -3,8 +3,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { horaParaMinutos, haConflito, gerarHorariosLivres, } from "../src/regras/agenda.js";
-import { cancelarAgendamento, gerarHorariosLivres } from "../src/regras/agenda.js";
+import { horaParaMinutos, haConflito, gerarHorariosLivres, cancelarAgendamento} from "../src/regras/agenda.js";
 
 // Um corte marcado às 10:00 (ocupa de 10:00 até 11:00).
 const corteAs10 = [{ inicio: "10:00", duracao: 60 }];
@@ -100,4 +99,26 @@ test("cancelar não apaga o mesmo horário de outro dia", () => {
 
     assert.equal(depois.length, 1);
     assert.equal(depois[0].data, "2026-11-03");
+});
+
+test("não oferece horários durante o almoço", function () {
+  const livres = gerarHorariosLivres("2026-10-30", 30, []);
+
+  assert.equal(livres.includes("12:00"), false);
+  assert.equal(livres.includes("12:30"), false);
+  assert.equal(livres.includes("13:00"), true);
+});
+
+test("não oferece início às 18:00 nem horários que terminem depois do fechamento", function () {
+  const livres = gerarHorariosLivres("2026-10-30", 30, []);
+
+  assert.equal(livres.includes("17:30"), true); // termina exatamente às 18:00
+  assert.equal(livres.includes("18:00"), false);
+});
+
+test("serviço de 90 minutos não pode começar às 17:00", function () {
+  const livres = gerarHorariosLivres("2026-10-30", 90, []);
+
+  assert.equal(livres.includes("16:30"), true); // termina exatamente às 18:00
+  assert.equal(livres.includes("17:00"), false); // terminaria às 18:30
 });
