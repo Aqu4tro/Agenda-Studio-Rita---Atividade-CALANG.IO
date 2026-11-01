@@ -1,0 +1,55 @@
+body {
+    background-color: #f5EFE6;
+    color: #4a2929;
+    text-align: center;
+    
+}
+
+#agendar {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#lista-servicos {
+    display: flex;
+    gap: 20px;
+    
+}
+
+.servico {
+    color: #4A2929;
+    background-color: #f3e8d8;
+    align-self: center;
+    padding: 20px;
+    border-radius: 12px;
+    font-family:  'Segoe UI', sans-serif;
+    font-size: 17px;
+    width: 220px;   
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    
+}
+
+.servico h3 {
+    color: #900000;
+    font-family: Georgia, serif;
+    font-size: 24px;
+    margin-top: 5px;
+    margin-bottom: 20px;
+
+}
+
+.servico p {
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 16px;
+    margin: 15px 0;
+}
+
+
+
+.servico:hover {
+    transform: translateY(-8px) scale (1.04);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+}
+
