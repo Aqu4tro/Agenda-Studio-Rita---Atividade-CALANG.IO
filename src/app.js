@@ -37,7 +37,7 @@ form.addEventListener("submit", function (event) {
     return;
   }
 
-  agendamentos.push({ nome, telefone }); // NOVO: adiciona na lista (push = incluir no final)
+  agendamentos.push({ nome, telefone, data, inicio, servico }); // NOVO: adiciona na lista (push = incluir no final)
   salvarAgendamentos(agendamentos);      // NOVO: grava no localStorage
 
   mensagem.textContent = "Nome e telefone preenchidos.";
