@@ -41,13 +41,35 @@ function atualizarPainel() {
     });
 
   listaAgendamentos.innerHTML = doDia.map(function (agendamento) {
+    const botaoConcluir = agendamento.concluido
+      ? ""
+      : `
+        <button
+          type="button"
+          class="concluir"
+          data-data="${agendamento.data}"
+          data-inicio="${agendamento.inicio}"
+        >
+          Concluir
+        </button>
+      `;
+
     return `
       <li>
         ${agendamento.inicio} — ${agendamento.nome} —
-        ${agendamento.telefone} — ${agendamento.servico}
-        <button type="button" class="cancelar"
+        ${agendamento.telefone} — ${agendamento.servico} —
+        ${agendamento.concluido ? "Concluído" : "Pendente"}
+
+        ${botaoConcluir}
+
+        <button
+          type="button"
+          class="cancelar"
           data-data="${agendamento.data}"
-          data-inicio="${agendamento.inicio}">Cancelar</button>
+          data-inicio="${agendamento.inicio}"
+        >
+          Cancelar
+        </button>
       </li>
     `;
   }).join("");
@@ -88,24 +110,39 @@ form.addEventListener("submit", function (event) {
   atualizarPainel();
 });
 
-// Um único "ouvinte" na lista inteira descobre qual botão foi clicado.
-// Isso funciona mesmo com botões criados depois pelo innerHTML.
-// dataset lê os atributos data-data e data-inicio que o botão carrega.
 listaAgendamentos.addEventListener("click", function (event) {
-  const botao = event.target.closest("button.cancelar");
-  if (!botao) {
+  const botaoConcluir = event.target.closest("button.concluir");
+  const botaoCancelar = event.target.closest("button.cancelar");
+
+  if (botaoConcluir) {
+    const atualizados = carregarAgendamentos().map(function (agendamento) {
+      if (
+        agendamento.data === botaoConcluir.dataset.data &&
+        agendamento.inicio === botaoConcluir.dataset.inicio
+      ) {
+        return { ...agendamento, concluido: true };
+      }
+
+      return agendamento;
+    });
+
+    salvarAgendamentos(atualizados);
+    mensagemPainel.textContent = "Atendimento marcado como concluído.";
+    atualizarPainel();
     return;
   }
 
-  const restantes = cancelarAgendamento(
-    carregarAgendamentos(),
-    botao.dataset.data,
-    botao.dataset.inicio
-  );
-  salvarAgendamentos(restantes);
+  if (botaoCancelar) {
+    const restantes = cancelarAgendamento(
+      carregarAgendamentos(),
+      botaoCancelar.dataset.data,
+      botaoCancelar.dataset.inicio
+    );
 
-  mensagemPainel.textContent = "Agendamento cancelado.";
-  atualizarPainel();
+    salvarAgendamentos(restantes);
+    mensagemPainel.textContent = "Agendamento cancelado.";
+    atualizarPainel();
+  }
 });
 
 campoDataPainel.addEventListener("change", atualizarPainel);
